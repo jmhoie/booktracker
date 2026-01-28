@@ -6,12 +6,21 @@ import (
 	"time"
 )
 
+type BookStatus string
+
+const (
+	StatusTBR BookStatus = "TBR"
+	StatusReading BookStatus = "Reading"
+	StatusFinished BookStatus = "Finished"
+	StatusDNF BookStatus = "DNF"
+)
+
 type Book struct {
 	ID int
 	Title string
 	Authors []Author
 	ISBN13 string
-	Status string
+	Status BookStatus
 	StartedAt *time.Time
 	FinishedAt *time.Time
 }
@@ -31,7 +40,7 @@ func NewBook(title string, authors []Author, isbn13 string) *Book {
 		Title: title,
 		Authors: authors,
 		ISBN13: isbn13,
-		Status: "TBR",
+		Status: StatusTBR,
 		StartedAt: nil,
 		FinishedAt: nil,
 	}
