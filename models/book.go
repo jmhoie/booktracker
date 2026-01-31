@@ -16,10 +16,10 @@ const (
 )
 
 type Book struct {
-	ID int
+	Id int
 	Title string
 	Authors []Author
-	ISBN13 string
+	Isbn13 string
 	Status BookStatus
 	StartedAt *time.Time
 	FinishedAt *time.Time
@@ -39,7 +39,7 @@ func NewBook(title string, authors []Author, isbn13 string) *Book {
 	return &Book{
 		Title: title,
 		Authors: authors,
-		ISBN13: isbn13,
+		Isbn13: isbn13,
 		Status: StatusTBR,
 		StartedAt: nil,
 		FinishedAt: nil,

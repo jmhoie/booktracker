@@ -3,7 +3,7 @@ package models
 import "fmt"
 
 type Author struct {
-	ID int
+	Id int
 	Name string
 }
 
