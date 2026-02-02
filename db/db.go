@@ -1,18 +1,20 @@
 package db
 
 import (
+	"time"
 	"database/sql"
 	"github.com/jmhoie/booktracker/models"
 
 	_ "modernc.org/sqlite"
 )
 
-// DB wraps the database connection.
+// DB wraps the database connection
 type DB struct {
 	conn *sql.DB
 }
 
-// create tables: books, authors, book_authors.
+// createTables creates the database tables: books, authors, book_authors and
+// as well as a trigger to clean up orphaned authors
 func (db *DB) createTables() error {
 	schema := `
 	CREATE TABLE IF NOT EXISTS books (
@@ -52,6 +54,8 @@ func (db *DB) createTables() error {
 	return err
 }
 
+// getOrCreateAuthor tries to fetch an author based on their name, if no 
+// author is found, it creates a new one and adds it to the authors table
 func (db *DB) getOrCreateAuthor(tx *sql.Tx, name string) (int, error) {
 	var id int
 	err := tx.QueryRow(`SELECT id FROM authors WHERE name = ?`, name).Scan(&id)
@@ -77,7 +81,7 @@ func (db *DB) getOrCreateAuthor(tx *sql.Tx, name string) (int, error) {
 	return int(authorId), nil
 }
 
-// Creates a new database connection and initializes tables.
+// Open creates a new database connection and initializes tables.
 func Open() (*DB, error) {
 	conn, err := sql.Open("sqlite", "books.db")
 	if err != nil {
@@ -103,12 +107,12 @@ func Open() (*DB, error) {
 	return db, nil
 }
 
-// Closes the database connection.
+// Close closes the database connection
 func (db *DB) Close() error {
 	return db.conn.Close()
 }
 
-// get the authors for a book based on book id
+// GetAuthors fetches the authors for a book based on the book id
 func (db *DB) GetAuthors(bookId int) ([]models.Author, error) {
 	var authors []models.Author	
 
@@ -136,7 +140,7 @@ func (db *DB) GetAuthors(bookId int) ([]models.Author, error) {
 	return authors, nil
 }
 
-// adds book to the database
+// AddBook creates and adds a book to the database
 func (db *DB) AddBook(b *models.Book) error {
 	tx, err := db.conn.Begin()
 	if err != nil {
@@ -183,7 +187,7 @@ func (db *DB) AddBook(b *models.Book) error {
 	return tx.Commit()
 }
 
-// get book by id with its authors
+// GetBook fetches a book by id, with its authors, from the database
 func (db *DB) GetBook(id int) (*models.Book, error) {
 	book := &models.Book{}
 
@@ -212,7 +216,7 @@ func (db *DB) GetBook(id int) (*models.Book, error) {
 	return book, nil
 }
 
-// get all books with their authors
+// GetAllBooks fetches all books with their authors from the database
 func (db *DB) GetAllBooks() ([]models.Book, error) {
 	rows, err := db.conn.Query(
 		`SELECT id, title, isbn13, status, started_at, finished_at FROM books`,
@@ -248,6 +252,7 @@ func (db *DB) GetAllBooks() ([]models.Book, error) {
 	return books, rows.Err()
 }
 
+// UpdateBookStatus sets the status of the book in the database
 func (db *DB) UpdateBookStatus(id int, status models.BookStatus) error {
 	_, err := db.conn.Exec(
 		`UPDATE books SET status = ? WHERE id = ?`,
@@ -257,3 +262,40 @@ func (db *DB) UpdateBookStatus(id int, status models.BookStatus) error {
 	return err
 }
 
+// UpdateStartedAt sets the started_at timestamp in the database
+func (db *DB) UpdateStartedAt(id int, startedAt time.Time) error {
+	_, err := db.conn.Exec(
+		`UPDATE books SET started_at = ? WHERE id = ?`,
+		startedAt,
+		id,
+	)
+	return err
+}
+
+// UpdateFinishedAt sets the finished_at timestamp in the database
+func (db *DB) UpdateFinishedAt(id int, finishedAt time.Time) error {
+	_, err := db.conn.Exec(
+		`UPDATE books SET started_at = ? WHERE id = ?`,
+		finishedAt,
+		id,
+	)
+	return err
+}
+
+// DeleteBook deletes book by id from the database
+func (db *DB) DeleteBook(id int) error {
+	_, err := db.conn.Exec(
+		`DELETE FROM books WHERE id = ?`,
+		id,
+	)
+	return err
+}
+
+// DeleteAuthor deletes author by id from the database
+func (db *DB) DeleteAuthor(id int) error {
+	_, err := db.conn.Exec(
+		`DELETE FROM authors WHERE id = ?`,
+		id,
+	)
+	return err
+}
