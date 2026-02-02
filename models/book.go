@@ -9,10 +9,11 @@ import (
 type BookStatus string
 
 const (
-	StatusTBR BookStatus = "TBR"
-	StatusReading BookStatus = "Reading"
-	StatusFinished BookStatus = "Finished"
-	StatusDNF BookStatus = "DNF"
+	StatusWishlist BookStatus = "wishlist"
+	StatusTBR BookStatus = "tbr"
+	StatusReading BookStatus = "reading"
+	StatusFinished BookStatus = "finished"
+	StatusDNF BookStatus = "dnf"
 )
 
 type Book struct {

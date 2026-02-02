@@ -1,16 +1,16 @@
 package main
 
 import (
-//	"github.com/jmhoie/booktracker/models"
-	"github.com/jmhoie/booktracker/cmd"
+	"fmt"
+	"github.com/jmhoie/booktracker/db"
 )
 
 func main() {
-	// book := models.NewBook(
-	// 	"The Go Programming Language",
-	// 	[]models.Author{{Name: "Alan Donovan"}, {Name: "Brian Kernighan"}}, 	
-	// 	"9780134190440",
-	// )
+	db, _ := db.Open()
+	defer db.Close()
 
-	cmd.Run()
+	_ = db.ResetAndSeed()
+
+	books, _ := db.GetAllBooks()
+	fmt.Println(books)
 }
